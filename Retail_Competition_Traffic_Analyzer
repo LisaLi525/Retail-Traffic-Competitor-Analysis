@@ -1,14 +1,14 @@
 # Function to load store lists
 load_store_lists <- function() {
-  m_store_list <- read.csv("~/R/Projects/R-DCM/Clients/Michaels/Assets/Inputs/Michaels_Store List.csv")
-  comp_store_list <- read.csv("~/R/Projects/R-DCM/Clients/Michaels/Assets/Inputs/Michaels_CompSet.csv")
+  m_store_list <- read.csv("~/R/Projects/R-DCM/Clients/Clients/Assets/Inputs/Clients_Store List.csv")
+  comp_store_list <- read.csv("~/R/Projects/R-DCM/Clients/Clients/Assets/Inputs/Clients_CompSet.csv")
 
   tbl_vars(comp_store_list)
   tbl_vars(m_store_list)
 
-  comp_store_list_Joann <- comp_store_list %>% filter(Company.Name == "1JoAnn" & Verified.Record %in% "Yes")
-  comp_store_list_Hobby <- comp_store_list %>% filter(Company.Name == "Hobby Lobby" & Verified.Record %in% "Yes")
-  comp_store_list_AC <- comp_store_list %>% filter(Company.Name == "AC Moore" & Verified.Record %in% "Yes")
+  comp_store_list_Joann <- comp_store_list %>% filter(Company.Name == "Competitor1" & Verified.Record %in% "Yes")
+  comp_store_list_Hobby <- comp_store_list %>% filter(Company.Name == "Competitor2" & Verified.Record %in% "Yes")
+  comp_store_list_AC <- comp_store_list %>% filter(Company.Name == "Competitor3" & Verified.Record %in% "Yes")
 
   comp_store <- rbind(comp_store_list_AC, comp_store_list_Hobby, comp_store_list_Joann)
 
@@ -17,9 +17,9 @@ load_store_lists <- function() {
 
 # Function to load traffic data
 load_traffic_data <- function() {
-  m_traffic <- read.csv("~/R/Projects/R-DCM/Clients/Michaels/Assets/Inputs/Michaels Conquesting by Zip Code.csv")
-  m_sales <- read.csv("~/R/Projects/R-DCM/Clients/Michaels/Assets/Inputs/L52wk_sales.csv")
-  m_sales_tl <- read.csv("~/R/Projects/R-DCM/Clients/Michaels/Assets/Inputs/total_sales.csv")
+  m_traffic <- read.csv("~/R/Projects/R-DCM/Clients/Clients/Assets/Inputs/Clients Conquesting by Zip Code.csv")
+  m_sales <- read.csv("~/R/Projects/R-DCM/Clients/Clients/Assets/Inputs/L52wk_sales.csv")
+  m_sales_tl <- read.csv("~/R/Projects/R-DCM/Clients/Clients/Assets/Inputs/total_sales.csv")
 
   comp_sale <- m_sales %>% select(store)
 
@@ -42,13 +42,13 @@ merge_traffic_store_info <- function(m_traffic, m_store_list, comp_store) {
   m_store_list$ZIP.CODE <- gsub("\\-.*", "", m_store_list$ZIP.CODE)
 
   m_traffic_filter <- m_traffic %>%
-    filter(LOCATION_BRAND %in% "Michaels") %>%
+    filter(LOCATION_BRAND %in% "Clients") %>%
     inner_join(m_store_list, by = c("LOCATION_ZIPCODE_5" = "ZIP.CODE")) %>%
     group_by(STORE.NUMBER, MARKET, STATE, DMA, ADDRESS., LOCATION_ZIPCODE_5, LATITUDE, LONGITUDE) %>%
     summarise(m_visit = sum(VISITS))
 
   missing_store_zip <- m_traffic %>%
-    filter(LOCATION_BRAND %in% "Michaels") %>%
+    filter(LOCATION_BRAND %in% "Clients") %>%
     full_join(m_store_list, by = c("LOCATION_ZIPCODE_5" = "ZIP.CODE")) %>%
     group_by(STORE.NUMBER, `X7.15.Print`) %>%
     summarise(traffic = sum(VISITS)) %>%
@@ -67,7 +67,7 @@ merge_traffic_store_info <- function(m_traffic, m_store_list, comp_store) {
 # Function to merge competitors' store data with traffic data
 merge_comp_store_traffic <- function(m_traffic, comp_store) {
   comp_store_AC <- m_traffic %>%
-    filter(LOCATION_BRAND %in% "ACMoore") %>%
+    filter(LOCATION_BRAND %in% "Competitor3") %>%
     inner_join(comp_store$comp_store_list_AC, by = c("LOCATION_ZIPCODE_5" = "Location.ZIP.Code")) %>%
     group_by(Location.Address, Location.City, Location.State, LOCATION_ZIPCODE_5, Latitude, Longitude, Company.Name) %>%
     summarise(
@@ -87,7 +87,7 @@ merge_comp_store_traffic <- function(m_traffic, comp_store) {
     )
 
   comp_store_Hobby <- m_traffic %>%
-    filter(LOCATION_BRAND %in% "HobbyLobby") %>%
+    filter(LOCATION_BRAND %in% "Competitor2") %>%
     inner_join(comp_store$comp_store_list_Hobby, by = c("LOCATION_ZIPCODE_5" = "Location.ZIP.Code")) %>%
     group_by(Location.Address, Location.City, Location.State, LOCATION_ZIPCODE_5, Latitude, Longitude, Company.Name) %>%
     summarise(
@@ -111,7 +111,7 @@ merge_comp_store_traffic <- function(m_traffic, comp_store) {
   return(list(comp_store_total = comp_store_total, comp_store_traffic_total = comp_store_traffic_total))
 }
 
-# Function to calculate distances between Michaels stores and competitors' stores
+# Function to calculate distances between Clients stores and competitors' stores
 calculate_distances <- function(m_traffic_filter, comp_store_total, b = 10) {
   storelist <- data.frame()
 
@@ -174,7 +174,7 @@ main <- function() {
   comp_store_total <- comp_store_traffic$comp_store_total
   comp_store_traffic_total <- comp_store_traffic$comp_store_traffic_total
 
-  # Calculate distances between Michaels stores and competitors' stores
+  # Calculate distances between Clients stores and competitors' stores
   storelist <- calculate_distances(m_traffic_filter, comp_store_total, b = 10)
 
   # Calculate traffic market share
@@ -187,7 +187,7 @@ main <- function() {
   print("Competitors' Store Information:")
   print(comp_store_total)
 
-  print("Distances between Michaels stores and Competitors' stores:")
+  print("Distances between Clients stores and Competitors' stores:")
   print(storelist)
 
   print("Traffic Market Share:")
