@@ -56,10 +56,3 @@ The code is organized into several functions for modularity and readability. Her
 - `main`: Main function to run the entire analysis.
 
 Feel free to explore each function for more details on its functionality.
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-```
-
-Make sure to include a `LICENSE` file if applicable and replace placeholder information with actual details related to your project.
